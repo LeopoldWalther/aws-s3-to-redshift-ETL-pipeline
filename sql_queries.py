@@ -18,57 +18,99 @@ time_table_drop = "DROP TABLE IF EXISTS time"
 # CREATE TABLES
 
 staging_events_table_create= ("""
+    CREATE TABLE staging_events(
+        artist              VARCHAR,
+        auth                VARCHAR,
+        firstName           VARCHAR,
+        gender              VARCHAR,
+        itemInSession       INTEGER,
+        lastName            VARCHAR,
+        length              FLOAT,
+        level               VARCHAR,
+        location            VARCHAR,
+        method              VARCHAR,
+        page                VARCHAR,
+        registration        FLOAT,
+        sessionId           INTEGER,
+        song                VARCHAR,
+        status              INTEGER,
+        ts                  TIMESTAMP,
+        userAgent           VARCHAR,
+        userId              INTEGER 
+    );
 """)
 
 staging_songs_table_create = ("""
+    CREATE TABLE staging_songs(
+        num_songs           INTEGER,
+        artist_id           VARCHAR,
+        artist_latitude     FLOAT,
+        artist_longitude    FLOAT,
+        artist_location     VARCHAR,
+        artist_name         VARCHAR,
+        song_id             VARCHAR,
+        title               VARCHAR,
+        duration            FLOAT,
+        year                INTEGER
+    );
 """)
 
-songplay_table_create = ("""CREATE TABLE IF NOT EXISTS songplays
-                            (songplay_id SERIAL, 
-                            start_time TIMESTAMP NOT NULL, 
-                            user_id int NOT NULL, 
-                            level varchar,
-                            song_id varchar, 
-                            artist_id varchar, 
-                            session_id int, 
-                            location text, 
-                            user_agent text);
-                        """)
+songplay_table_create = ("""
+    CREATE TABLE IF NOT EXISTS songplays(
+        songplay_id         SERIAL                  PRIMARY KEY, 
+        start_time          TIMESTAMP   NOT NULL    SORTKEY DISTKEY,
+        user_id             INTEGER     NOT NULL, 
+        level               VARCHAR,
+        song_id             VARCHAR     NOT NULL, 
+        artist_id           VARCHAR     NOT NULL,  
+        session_id          INTEGER, 
+        location            VARCHAR, 
+        user_agent          VARCHAR
+        );
+    """)
 
 
-user_table_create = ("""CREATE TABLE IF NOT EXISTS users 
-                        (user_id int PRIMARY KEY, 
-                        first_name varchar, 
-                        last_name varchar, 
-                        gender varchar(1), 
-                        level varchar);
-                    """)
+user_table_create = ("""
+    CREATE TABLE IF NOT EXISTS users(
+        user_id             INTEGER     NOT NULL    SORTKEY PRIMARY KEY, 
+        first_name          VARCHAR     NOT NULL, 
+        last_name           VARCHAR     NOT NULL,
+        gender              VARCHAR(1)  NOT NULL, 
+        level               VARCHAR     NOT NULL
+        );
+    """)
 
-song_table_create = ("""CREATE TABLE IF NOT EXISTS songs 
-                        (song_id varchar PRIMARY KEY, 
-                        title text, 
-                        artist_id varchar, 
-                        year int, 
-                        duration numeric);
-                    """)
+song_table_create = ("""
+    CREATE TABLE IF NOT EXISTS songs(
+        song_id             VARCHAR     NOT NULL    SORTKEY PRIMARY KEY,
+        title               VARCHAR     NOT NULL, 
+        artist_id           VARCHAR     NOT NULL,  
+        year                INTEGER     NOT NULL,  
+        duration            FLOAT
+        );
+    """)
 
-artist_table_create = ("""CREATE TABLE IF NOT EXISTS artists
-                        (artist_id varchar PRIMARY KEY,
-                        name varchar,
-                        location text,
-                        latitude decimal,
-                        longitude decimal);
-                    """)
+artist_table_create = ("""
+    CREATE TABLE IF NOT EXISTS artists(
+        artist_id           VARCHAR     NOT NULL    SORTKEY PRIMARY KEY,
+        name                VARCHAR     NOT NULL,
+        location            VARCHAR,
+        latitude            FLOAT,
+        longitude           FLOAT
+        );
+    """)
 
-time_table_create = ("""CREATE TABLE IF NOT EXISTS time 
-                        (start_time TIMESTAMP PRIMARY KEY, 
-                        hour int, 
-                        day int, 
-                        week int, 
-                        month int, 
-                        year int, 
-                        weekday varchar);
-                    """)
+time_table_create = ("""
+    CREATE TABLE IF NOT EXISTS time(
+        start_time          TIMESTAMP   NOT NULL    DISTKEY SORTKEY PRIMARY KEY,
+        hour                INTEGER     NOT NULL, 
+        day                 INTEGER     NOT NULL, 
+        week                INTEGER     NOT NULL, 
+        month               INTEGER     NOT NULL, 
+        year                INTEGER     NOT NULL, 
+        weekday             VARCHAR     NOT NULL
+        );
+    """)
 
 # STAGING TABLES
 
