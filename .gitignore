@@ -1,4 +1,6 @@
 .ds*
+*.ipynb
+settings.json
 
 # virtual environment
 env380/*
