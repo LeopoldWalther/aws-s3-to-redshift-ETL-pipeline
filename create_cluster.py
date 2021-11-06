@@ -7,9 +7,10 @@ import psycopg2
 
 
 class datawarehouse(object):
-    """TODO: """
+    """A class to setup an AWS Data Warehouse."""
+
     def __init__(self):
-        """Initialize this node in the Trie"""
+        """Initialize the Data Warehouse, parse config file and create clients."""
 
         # Load DWH Params from a file
         config = configparser.ConfigParser()
@@ -28,7 +29,6 @@ class datawarehouse(object):
         self.DWH_IAM_ROLE_NAME      = config.get("DWH", "DWH_IAM_ROLE_NAME")
 
         ## Create clients for EC2, S3, IAM, and Redshift
-
         self.ec2 = boto3.resource('ec2',
                             region_name='us-west-2',
                             aws_access_key_id=self.KEY,
@@ -40,7 +40,6 @@ class datawarehouse(object):
                         aws_access_key_id=self.KEY,
                         aws_secret_access_key=self.SECRET
                         ) 
-
 
         self.iam = boto3.client('iam',
                         region_name='us-west-2',
@@ -56,7 +55,8 @@ class datawarehouse(object):
 
 
     def create_iam_role(self):
-        # 1.1 Create the IAM role, 
+        """Create the IAM role to allow the Redshift cluster to calls AWS services."""
+        # 1.1 Create the IAM role
         try:
             print("1.1 Creating a new IAM Role") 
             dwhRole = self.iam.create_role(
@@ -72,7 +72,6 @@ class datawarehouse(object):
         except Exception as e:
             print(e)
             
-            
         print("1.2 Attaching Policy")
         self.iam.attach_role_policy(RoleName=self.DWH_IAM_ROLE_NAME,
                             PolicyArn="arn:aws:iam::aws:policy/AmazonS3ReadOnlyAccess"
@@ -83,6 +82,7 @@ class datawarehouse(object):
 
 
     def create_redshift_cluster(self):
+        """Create the redshift cluster using the client and configuration information"""
         # Step 2: Create Redshift Cluster
         try:
             response = self.redshift.create_cluster(        
@@ -106,6 +106,7 @@ class datawarehouse(object):
     
 
     def get_cluster_endpoint_and_role_arn(self):
+        """Method to query the Data Warhouse endpoint and IAM roles."""
 
         def prettyRedshiftProps(props):
             pd.set_option('display.max_colwidth', None)
@@ -123,6 +124,7 @@ class datawarehouse(object):
 
 
     def open_ports(self):
+        """Open the ports of the virtual privat cloud for incoming and outgoing traffic."""
 
         # STEP 3: Open an incoming  TCP port to access the cluster ednpoint
         try:
@@ -141,19 +143,16 @@ class datawarehouse(object):
 
 
 def main():
+    """Main function to create Data Warehouse and check if connection works properly."""
     MyDatawarehouse = datawarehouse()
     datawarehouse.create_iam_role()
     datawarehouse.create_redshift_cluster()
     datawarehouse.get_cluster_endpoint_and_role_arn()
     datawarehouse.open_ports()
 
-    
-    
     conn = psycopg2.connect("host={} dbname={} user={} password={} port={}".format(*config['CLUSTER'].values()))
     cur = conn.cursor()
-
     print('Connected')
-
     conn.close()
 
 
