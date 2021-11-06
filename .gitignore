@@ -1,5 +1,4 @@
 .ds*
-*.ipynb
 settings.json
 
 # virtual environment
