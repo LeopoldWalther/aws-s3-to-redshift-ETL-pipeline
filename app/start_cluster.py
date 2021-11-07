@@ -1,4 +1,4 @@
-from create_cluster import datawarehouse
+from control_datawarehouse import datawarehouse
 
 def main():
     """Initializes the datawarehouse object, creates an IAM role and start a redshift cluster"""

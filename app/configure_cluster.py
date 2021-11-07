@@ -1,4 +1,4 @@
-from create_cluster import datawarehouse
+from control_datawarehouse import datawarehouse
 import psycopg2
 
 def main():

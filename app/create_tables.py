@@ -1,7 +1,7 @@
 import configparser
 import psycopg2
 from sql_queries import create_table_queries, drop_table_queries
-from create_cluster import datawarehouse
+from control_datawarehouse import datawarehouse
 
 
 def drop_tables(cur, conn):

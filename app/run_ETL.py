@@ -1,7 +1,7 @@
 import configparser
 import psycopg2
 from sql_queries import copy_table_queries, insert_table_queries, check_tables_queries
-from create_cluster import datawarehouse
+from control_datawarehouse import datawarehouse
 
 
 def load_staging_tables(cur, conn):
