@@ -53,6 +53,8 @@ class datawarehouse(object):
                             aws_secret_access_key=self.SECRET
                             )
 
+        print('Data Warehouse object successfully initialized')
+
 
     def create_iam_role(self):
         """Create the IAM role to allow the Redshift cluster to calls AWS services."""
@@ -80,6 +82,8 @@ class datawarehouse(object):
         print("1.3 Get the IAM role ARN")
         self.roleArn = self.iam.get_role(RoleName=self.DWH_IAM_ROLE_NAME)['Role']['Arn']
 
+        print("Creation of IAM role complete")
+
 
     def create_redshift_cluster(self):
         """Create the redshift cluster using the client and configuration information"""
@@ -103,24 +107,31 @@ class datawarehouse(object):
             )
         except Exception as e:
             print(e)
+
+        print("Redshift cluster successfully created")
     
 
-    def get_cluster_endpoint_and_role_arn(self):
-        """Method to query the Data Warhouse endpoint and IAM roles."""
+    def describe_redshift_cluster(self):
+        """Method to describe the current status of the redshift cluster."""
 
-        def prettyRedshiftProps(props):
+        def retrieve_redshift_properties(props):
+            """Function to return the properties of the redshift cluster nicely formatted."""
             pd.set_option('display.max_colwidth', None)
             keysToShow = ["ClusterIdentifier", "NodeType", "ClusterStatus", "MasterUsername", "DBName", "Endpoint", "NumberOfNodes", 'VpcId']
             x = [(k, v) for k,v in props.items() if k in keysToShow]
             return pd.DataFrame(data=x, columns=["Key", "Value"])
 
         # 2.1 *Describe* the cluster to see its status
-        myClusterProps = self.redshift.describe_clusters(ClusterIdentifier=self.DWH_CLUSTER_IDENTIFIER)['Clusters'][0]
-        prettyRedshiftProps(myClusterProps)
+        self.clusterProperties = self.redshift.describe_clusters(ClusterIdentifier=self.DWH_CLUSTER_IDENTIFIER)['Clusters'][0]
+        retrieve_redshift_properties(self.clusterProperties)
+
+    def get_cluster_endpoint_and_role_arn(self):
+        """Method to query the Data Warhouse endpoint and IAM roles."""
 
         # 2.2 Take note of the cluster endpoint and role ARN
-        self.DWH_ENDPOINT = myClusterProps['Endpoint']['Address']
-        self.DWH_ROLE_ARN = myClusterProps['IamRoles'][0]['IamRoleArn']
+        self.DWH_ENDPOINT = self.clusterProperties['Endpoint']['Address']
+        self.DWH_ROLE_ARN = self.clusterProperties['IamRoles'][0]['IamRoleArn']
+        print("DWH_ENDPOINT and DWH_ROLE_ARN retrieved")
 
         config = configparser.ConfigParser()
         config.read_file(open('dwh.cfg'))
@@ -130,6 +141,7 @@ class datawarehouse(object):
         with open('dwh.cfg', 'w') as configfile:    
             config.write(configfile)
             configfile.close()
+        print("Added endpoint and role ARN to config file")
 
 
     def open_ports(self):
@@ -137,7 +149,7 @@ class datawarehouse(object):
 
         # STEP 3: Open an incoming  TCP port to access the cluster ednpoint
         try:
-            vpc = self.ec2.Vpc(id=self.myClusterProps['VpcId'])
+            vpc = self.ec2.Vpc(id=self.clusterProperties['VpcId'])
             defaultSg = list(vpc.security_groups.all())[0]
             print(defaultSg)
             defaultSg.authorize_ingress(
@@ -150,21 +162,16 @@ class datawarehouse(object):
         except Exception as e:
             print(e)
 
+        print("Ports of virtual private cloud open for incoming and outgoing traffic")
 
-def main():
-    """Main function to create Data Warehouse and check if connection works properly."""
-    MyDatawarehouse = datawarehouse()
-    datawarehouse.create_iam_role()
-    datawarehouse.create_redshift_cluster()
-    datawarehouse.get_cluster_endpoint_and_role_arn()
-    datawarehouse.open_ports()
+    def delete_redshift_cluster(self):
+        """Method to delete a redshift cluster."""
 
-    conn = psycopg2.connect("host={} dbname={} user={} password={} port={}".format(*config['CLUSTER'].values()))
-    cur = conn.cursor()
-    print('Connected')
-    conn.close()
+        self.redshift.delete_cluster( ClusterIdentifier=self.DWH_CLUSTER_IDENTIFIER,  SkipFinalClusterSnapshot=True)
+        print('Started deletion of redshift cluster.')
 
-
-
-if __name__ == "__main__":
-    main()
+    def delete_IAM(self):
+        """Method to delete IAM role and attached rights."""
+        self.iam.detach_role_policy(RoleName=self.DWH_IAM_ROLE_NAME, PolicyArn="arn:aws:iam::aws:policy/AmazonS3ReadOnlyAccess")
+        self.iam.delete_role(RoleName=self.DWH_IAM_ROLE_NAME)
+        print("Deleted IAM role and attached rights")
