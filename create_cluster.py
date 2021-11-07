@@ -122,6 +122,15 @@ class datawarehouse(object):
         self.DWH_ENDPOINT = myClusterProps['Endpoint']['Address']
         self.DWH_ROLE_ARN = myClusterProps['IamRoles'][0]['IamRoleArn']
 
+        config = configparser.ConfigParser()
+        config.read_file(open('dwh.cfg'))
+        
+        config.set('DWH', 'DWH_ENDPOINT', self.DWH_ENDPOINT)
+        config.set('DWH', 'DWH_ROLE_ARN', self.DWH_ROLE_ARN)
+        with open('dwh.cfg', 'w') as configfile:    
+            config.write(configfile)
+            configfile.close()
+
 
     def open_ports(self):
         """Open the ports of the virtual privat cloud for incoming and outgoing traffic."""

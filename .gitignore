@@ -5,7 +5,7 @@ settings.json
 env380/*
 
 # aws config file
-dwh.cfg
+*.cfg
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
