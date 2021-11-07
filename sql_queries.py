@@ -113,7 +113,7 @@ time_table_create = ("""
     );
     """)
 
-# STAGING TABLES
+# COPY STAGING TABLES
 
 staging_events_copy = ("""
     copy staging_events from {data_bucket}
@@ -129,7 +129,7 @@ staging_songs_copy = ("""
 """).format(data_bucket=config['S3']['SONG_DATA'], role_arn=config['DWH']['DWH_ROLE_ARN'])
 
 
-# FINAL TABLES
+# INSERT FINAL TABLES
 
 songplay_table_insert = ("""
     INSERT INTO songplays (start_time, user_id, level, song_id, artist_id, session_id, location, user_agent)
@@ -192,9 +192,71 @@ time_table_insert = ("""
     FROM songplays;
 """)
 
+# ANALYSIS QUERIES
+
+# GET NUMBER OF ROWS IN EACH TABLE
+count_rows_staging_events = ("""
+    SELECT COUNT(*) FROM staging_events;
+""")
+
+count_rows_staging_songs = ("""
+    SELECT COUNT(*) FROM staging_songs;
+""")
+
+count_rows_songplays = ("""
+    SELECT COUNT(*) FROM songplays;
+""")
+
+count_rows_users = ("""
+    SELECT COUNT(*) FROM users;
+""")
+
+count_rows_songs = ("""
+    SELECT COUNT(*) FROM songs;
+""")
+
+count_rows_artists = ("""
+    SELECT COUNT(*) FROM artists;
+""")
+
+count_rows_time = ("""
+    SELECT COUNT(*) FROM time;
+""")
+
+head_staging_events = ("""
+    SELECT * FROM staging_events LIMIT 2;
+""")
+
+head_staging_songs = ("""
+    SELECT * FROM staging_songs LIMIT 2;
+""")
+
+head_songplays = ("""
+    SELECT * FROM songplays LIMIT 2;
+""")
+
+head_users = ("""
+    SELECT * FROM users LIMIT 2;
+""")
+
+head_songs = ("""
+    SELECT * FROM songs LIMIT 2;
+""")
+
+head_artists = ("""
+    SELECT * FROM artists LIMIT 2;
+""")
+
+head_time = ("""
+    SELECT * FROM time LIMIT 2;
+""")
+
+
 # QUERY LISTS
 
 create_table_queries = [staging_events_table_create, staging_songs_table_create, songplay_table_create, user_table_create, song_table_create, artist_table_create, time_table_create]
 drop_table_queries = [staging_events_table_drop, staging_songs_table_drop, songplay_table_drop, user_table_drop, song_table_drop, artist_table_drop, time_table_drop]
 copy_table_queries = [staging_events_copy, staging_songs_copy]
 insert_table_queries = [songplay_table_insert, user_table_insert, song_table_insert, artist_table_insert, time_table_insert]
+check_tables_queries = [count_rows_staging_events, head_staging_events, count_rows_staging_songs, head_staging_songs, count_rows_songplays, head_songplays, \
+    count_rows_users, head_users, count_rows_songs, head_songs, count_rows_artists, head_artists, count_rows_time, head_time]

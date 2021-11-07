@@ -5,18 +5,24 @@ from create_cluster import datawarehouse
 
 
 def drop_tables(cur, conn):
+    """Loops through all queries and drops tables if exist"""
     for query in drop_table_queries:
         cur.execute(query)
         conn.commit()
 
 
 def create_tables(cur, conn):
+    """Loops through all queries and creates tables in redshift cluster"""
     for query in create_table_queries:
         cur.execute(query)
         conn.commit()
 
 
 def main():
+    """
+    Creates connection to previously created redshift cluster, 
+    drops existing tables and creates staging tables and OLAP tables
+    """
 
     MyDWH = datawarehouse()
     MyDWH.describe_redshift_cluster()

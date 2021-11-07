@@ -109,7 +109,7 @@ class datawarehouse(object):
             print(e)
 
         print("Redshift cluster successfully created")
-    
+        
 
     def describe_redshift_cluster(self):
         """Method to describe the current status of the redshift cluster."""
